@@ -1,0 +1,156 @@
+package com.example.mainactivity
+
+import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.mainactivity.ui.theme.MainActivityTheme
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            MainActivityTheme {
+                MainScreen()
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreen() {
+    // ✅ Context for Toasts
+    val context = LocalContext.current
+
+    // ✅ Step 2: Variables for user input and dropdowns
+    var country by remember { mutableStateOf("") }
+    var selectedOption by remember { mutableStateOf("Option 1") }
+
+    // ✅ Step 3 & 4: Lists for dropdowns
+    val countries = listOf("USA", "Canada", "UK", "India", "Japan")
+    val options = listOf("Option 1", "Option 2", "Option 3", "Option 4", "Option 5")
+
+    // Layout
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // 🟩 Step 1: TextView for instructions
+        Text(
+            text = "Please enter your favorite country and select an option below:",
+            fontSize = 18.sp,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // 🟩 Step 2 & 3: AutoCompleteTextView-style TextField (Country input)
+        var expanded by remember { mutableStateOf(false) }
+        var filteredCountries by remember { mutableStateOf(countries) }
+
+        Box {
+            TextField(
+                value = country,
+                onValueChange = {
+                    country = it
+                    expanded = true
+                    filteredCountries = if (it.isEmpty()) {
+                        countries
+                    } else {
+                        countries.filter { c -> c.contains(it, ignoreCase = true) }
+                    }
+                },
+                placeholder = { Text("Choose a country") },
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(onClick = { expanded = !expanded }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Dropdown"
+                        )
+                    }
+                },
+                singleLine = true
+            )
+
+            DropdownMenu(
+                expanded = expanded && filteredCountries.isNotEmpty(),
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                filteredCountries.forEach { c ->
+                    DropdownMenuItem(
+                        text = { Text(c) },
+                        onClick = {
+                            country = c
+                            expanded = false
+                            Toast.makeText(context, "Selected: $c", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 🟩 Step 4: Spinner-like dropdown for 5 sample options
+        var expandedOption by remember { mutableStateOf(false) }
+
+        Box {
+            TextField(
+                value = selectedOption,
+                onValueChange = {},
+                modifier = Modifier.fillMaxWidth(),
+                readOnly = true,
+                trailingIcon = {
+                    IconButton(onClick = { expandedOption = !expandedOption }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Options Dropdown"
+                        )
+                    }
+                }
+            )
+
+            DropdownMenu(
+                expanded = expandedOption,
+                onDismissRequest = { expandedOption = false }
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            selectedOption = option
+                            expandedOption = false
+                            Toast.makeText(context, "Selected: $option", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainScreenPreview() {
+    MainActivityTheme {
+        MainScreen()
+    }
+}
