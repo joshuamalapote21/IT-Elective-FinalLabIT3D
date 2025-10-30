@@ -1,0 +1,43 @@
+package com.example.mainactivity
+
+import android.os.Bundle
+import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.ImageSwitcher
+import android.widget.ImageView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+
+    private val images = listOf(R.drawable.idonow, R.drawable.monsters)
+    private var currentIndex = 0
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val imgView = findViewById<ImageView>(R.id.imgView)
+        imgView.setImageResource(R.drawable.idonow)
+
+        val imageSwitcher = findViewById<ImageSwitcher>(R.id.imageSwitcher)
+        imageSwitcher.setFactory {
+            ImageView(this).apply {
+                scaleType = ImageView.ScaleType.CENTER_INSIDE
+                layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+                )
+            }
+        }
+
+        imageSwitcher.setImageResource(images[currentIndex])
+
+        val btnSwitch = findViewById<Button>(R.id.btnSwitchImage)
+        btnSwitch.setOnClickListener {
+            currentIndex = (currentIndex + 1) % images.size
+            imageSwitcher.setImageResource(images[currentIndex])
+            Toast.makeText(this, "Switched Image!", Toast.LENGTH_SHORT).show()
+        }
+    }
+}
